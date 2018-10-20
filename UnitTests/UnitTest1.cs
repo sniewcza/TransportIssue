@@ -1,16 +1,21 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TransportIssue.Utilities;
+using System.Linq;
 namespace UnitTests
 {
     [TestClass]
-    public class UnitTest1
+    public class TransportIssueSolverTest
     {
-        [TestMethod]
-        public void TestMethod1()
+        private TransportIssueSolver _solver;
+        public TransportIssueSolverTest()
         {
-            //Arrange
-            TransportIssueSolver solver = new TransportIssueSolver();
+            _solver = new TransportIssueSolver();
+        }
+        [TestMethod]
+        public void Solver_Should_Return_Fixed_BaseSolution()
+        {
+            //Arrange           
             double[,] costs = new double[,]
             {
                 {3,5,7 },
@@ -19,7 +24,7 @@ namespace UnitTests
             };
             double[] delivers = new double[] { 50, 70, 30 };
             double[] recipents = new double[] { 20, 40, 90 };
-            double[,] result = new double[,]
+            double[,] validResult = new double[,]
             {
                 {20,10,20 },
                 {0,0,70},
@@ -27,11 +32,33 @@ namespace UnitTests
             };
 
             //Act
-            var solverResult = solver.FindaBaseSolution(costs, delivers, recipents);
+            var solverResult = _solver.FindaBaseSolution(costs, delivers, recipents);
 
             //Assert
 
-            Assert.IsTrue(CheckEquals(result, solverResult));
+            Assert.IsTrue(CheckEquals(validResult, solverResult));
+        }
+
+        [TestMethod]
+        public void Solver_Should_Return_Fixed_DualVariables()
+        {
+            //Arrange
+            double[,] input = new double[,]
+            {
+                {3,5,0 },
+                {0,10,9},
+                {0,0,9}
+            };
+
+            double[] validAlfa = new double[] { 0, -5, -5 };
+            double[] validBeta = new double[] { -3, -5, -4 };
+            //Act
+           var solutions = _solver.BuildDualVariables(input);
+
+            //Assert
+            Assert.IsTrue(CheckEquals(solutions.Item1, validAlfa));
+            Assert.IsTrue(CheckEquals(solutions.Item2,validBeta));
+
         }
 
         private bool CheckEquals(double[,] m1, double[,] m2)
@@ -40,12 +67,17 @@ namespace UnitTests
             {
                 throw new ArgumentException("Lengths are not equals!");
             }
-
+          
             for (int i = 0; i < m1.GetLength(0); i++)
                 for (int j = 0; j < m1.GetLength(1); j++)
                     if (m1[i, j] != m2[i, j])
                         return false;
             return true;
+        }
+        
+        private bool CheckEquals(double[] v1, double[] v2)
+        {
+          return  v1.SequenceEqual(v2);
         }
 
     }
