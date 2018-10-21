@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using MathNet.Numerics.LinearAlgebra.Double;
 namespace TransportIssue.Utilities
@@ -6,7 +7,7 @@ namespace TransportIssue.Utilities
     public class TransportIssueSolver : ITransportIssueSolver
     {
         public double[,] FindaBaseSolution(double[,] transportCosts, double[] delivers, double[] recipents)
-        {           
+        {
             if (transportCosts.Length != 9 || delivers.Length != 3 || recipents.Length != 3)
             {
                 throw new ArgumentException("It only works for 3x3 matrix");
@@ -51,14 +52,14 @@ namespace TransportIssue.Utilities
             return result.ToArray();
         }
 
-        public double[,] BuildOptimalityIndexTable(double[,] input , double[] alfa, double[] beta)
+        public double[,] BuildOptimalityIndexTable(double[,] input, double[] alfa, double[] beta)
         {
-           
+
             DenseMatrix matrix = DenseMatrix.OfArray(input);
 
             for (int i = 0; i < matrix.RowCount; i++)
                 for (int j = 0; j < matrix.ColumnCount; j++)
-                    if (matrix[i, j] != 0) 
+                    if (matrix[i, j] != 0)
                     {
                         matrix[i, j] = matrix[i, j] + alfa[i] + beta[j];
                     }
@@ -97,7 +98,7 @@ namespace TransportIssue.Utilities
 
                     for (int i = 0; i < values.Count; i++)
                     {
-                        if (betaVector[index] != int.MaxValue && values[i] !=0)
+                        if (betaVector[index] != int.MaxValue && values[i] != 0)
                         {
                             alfaVector[i] = Solve(betaVector[index], values[i]);
                         }
@@ -112,5 +113,58 @@ namespace TransportIssue.Utilities
         {
             return -a - b;
         }
+
+        public double[,] InverseBaseSolutionMatrix(double[,] baseSolution, double[,] transportCosts)
+        {
+            DenseMatrix inversed = DenseMatrix.Create(3, 3, 0);
+
+            for (int i = 0; i < 3; i++)
+                for (int j = 0; j < 3; j++)
+                    if (baseSolution[i, j] == 0)
+                    {
+                        inversed[i, j] = transportCosts[i, j];
+                    }
+            return inversed.ToArray();
+        }
+
+        public double[,] InverseCostsMatrix(double[,] costs, double[,] baseSolution)
+        {
+            DenseMatrix inversed = DenseMatrix.Create(3, 3, 0);
+            for (int i = 0; i < 3; i++)
+                for (int j = 0; j < 3; j++)
+                    if (baseSolution[i, j] != 0)
+                    {
+                        inversed[i, j] = costs[i, j];
+                    }
+            return inversed.ToArray();
+        }
+
+        public double[,] BuildNextBaseSolution(double[,] baseSolution, List<Tuple<int,int>> cycle)
+        {
+            
+            DenseMatrix curentSolution = DenseMatrix.OfArray(baseSolution);
+
+            var negative1 = cycle[1];
+            var negative2 = cycle[3];
+            var val1 = curentSolution[negative1.Item1, negative1.Item2];
+            var val2 = curentSolution[negative2.Item1, negative2.Item2];
+            double min = val1 < val2 ? val1 : val2;
+            
+            for(int i =0;i<cycle.Count;i++)
+            {
+                if (i == 0 || i % 2 == 0)
+                {
+                    curentSolution[cycle[i].Item1, cycle[i].Item2] += min;
+                }
+                else
+                {
+                    curentSolution[cycle[i].Item1, cycle[i].Item2] -= min;
+                }
+            }
+
+            return curentSolution.ToArray();
+        }
+
+       
     }
 }

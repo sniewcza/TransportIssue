@@ -2,6 +2,8 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TransportIssue.Utilities;
 using System.Linq;
+using System.Collections.Generic;
+
 namespace UnitTests
 {
     [TestClass]
@@ -53,11 +55,11 @@ namespace UnitTests
             double[] validAlfa = new double[] { 0, -5, -5 };
             double[] validBeta = new double[] { -3, -5, -4 };
             //Act
-           var solutions = _solver.BuildDualVariables(input);
+            var solutions = _solver.BuildDualVariables(input);
 
             //Assert
             Assert.IsTrue(CheckEquals(solutions.Item1, validAlfa));
-            Assert.IsTrue(CheckEquals(solutions.Item2,validBeta));
+            Assert.IsTrue(CheckEquals(solutions.Item2, validBeta));
 
         }
 
@@ -67,18 +69,107 @@ namespace UnitTests
             {
                 throw new ArgumentException("Lengths are not equals!");
             }
-          
+
             for (int i = 0; i < m1.GetLength(0); i++)
                 for (int j = 0; j < m1.GetLength(1); j++)
                     if (m1[i, j] != m2[i, j])
                         return false;
             return true;
         }
-        
+
         private bool CheckEquals(double[] v1, double[] v2)
         {
-          return  v1.SequenceEqual(v2);
+            return v1.SequenceEqual(v2);
         }
 
+        [TestMethod]
+        public void Solver_Should_Return_Fixed_OptimalityIndexTable()
+        {
+            //Arrange
+            double[,] input = new double[,]
+            {
+                {0,0,7 },
+                {12,0,0 },
+                {13,3,0 }
+            };
+            double[] validAlfa = new double[] { 0, -5, -5 };
+            double[] validBeta = new double[] { -3, -5, -4 };
+
+            double[,] validResult = new double[,]
+            {
+                {0,0,3 },
+                {4,0,0 },
+                {5,-7,0 }
+            };
+
+            //Act
+
+            var solverResult = _solver.BuildOptimalityIndexTable(input, validAlfa, validBeta);
+
+            //Assert
+            Assert.IsTrue(CheckEquals(validResult, solverResult));
+        }
+
+        [TestMethod]
+        public void Solver_Should_Return_Fixed_ReversedBaseSolutionTable()
+        {
+            //Arrange
+            double[,] baseSolution = new double[,]
+           {
+                {20,10,20 },
+                {0,0,70},
+                {0,30,0}
+           };
+            double[,] costs = new double[,]
+            {
+                {3,5,7 },
+                {12,10,9},
+                {13,3,9}
+            };
+            double[,] validResult = new double[,]
+            {
+                {0,0,0 },
+                {12,10,0 },
+                {13,0,9 }
+            };
+
+            //Act
+            var solverResult = _solver.InverseBaseSolutionMatrix(baseSolution, costs);
+
+            //Assert
+            Assert.IsTrue(CheckEquals(validResult, solverResult));
+        }
+
+        [TestMethod]
+        public void Solver_Should_Return_Fixed_NextBaseSolution()
+        {
+            //Arrange
+            double[,] input = new double[,]
+            {
+                {20,30,0 },
+                {0,10,60 },
+                {0,0,30 }
+            };
+
+            List<Tuple<int, int>> cycle = new List<Tuple<int, int>>()
+            {
+                new Tuple<int, int>(2,1),
+                new Tuple<int, int>(1,1),
+                new Tuple<int, int>(1,2),
+                new Tuple<int, int>(2,2)
+            };
+
+            double[,] validResult = new double[,]
+            {
+                {20,30,0 },
+                {0,0,70 },
+                {0,10,20 }
+            };
+            //Act
+            var solverResult = _solver.BuildNextBaseSolution(input, cycle);
+
+            //Assert
+            Assert.IsTrue(CheckEquals(validResult, solverResult));
+        }
     }
 }
