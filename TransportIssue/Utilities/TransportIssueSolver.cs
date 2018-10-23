@@ -165,6 +165,138 @@ namespace TransportIssue.Utilities
             return curentSolution.ToArray();
         }
 
-       
+        public List<Tuple<int, int, double>> BuildCycle(double[,] input)
+        {
+            DenseMatrix matrix = DenseMatrix.OfArray(input);
+            List<Tuple<int, int,double>> list = new List<Tuple<int, int,double>>();
+            Tuple<int, int,double> _start = null;
+
+            // Start element of cycle
+            for (int i = 0; i < matrix.ColumnCount; i++)
+                for (int j = 0; j < matrix.RowCount; j++)
+                    if (matrix[i, j] < 0 )
+                    {
+                        _start = new Tuple<int, int, double>(i, j, i + j);
+                    }
+
+            list.Add(_start);
+
+            ChoosePath(list, matrix);
+
+            list.Sort((x,y) => y.Item3.CompareTo(x.Item3));
+
+            //swap
+            if(list.ElementAt(1).Item1 > list.ElementAt(2).Item1)
+            {
+               Tuple<int, int, double> temp = list.ElementAt(1);
+                list[1] = list[2];
+                list[2] = temp;
+            }
+
+            return list;
+
+        }
+
+        public List<Tuple<int,int, double>> FirstPath(List<Tuple<int, int, double>> list,DenseMatrix matrix) {
+
+          
+
+            //#3
+            for (int j = 0; j < matrix.RowCount; j++)
+                if (matrix[list.ElementAt(1).Item1, j] > 0 && j != list.ElementAt(1).Item2)
+                {
+                    list.Add(new Tuple<int, int, double>(list.ElementAt(1).Item1, j, list.ElementAt(1).Item1 + j));
+                    break;
+                }
+            //#4
+            for (int i = 0; i < matrix.ColumnCount; i++)
+                if (matrix[i, list.ElementAt(2).Item2] > 0 && i != list.ElementAt(2).Item1)
+                {
+                    list.Add(new Tuple<int, int, double>(i, list.ElementAt(2).Item2, i + list.ElementAt(2).Item2));
+                    break;
+                }
+
+            return list;
+        }
+
+        public List<Tuple<int, int,double>> SecondPath(List<Tuple<int, int, double>> list, DenseMatrix matrix)
+        {
+
+           
+
+            //#3
+            for (int i = 0; i < matrix.ColumnCount; i++)
+                if (matrix[i, list.ElementAt(1).Item2] > 0 && i != list.ElementAt(1).Item1)
+                {
+                    list.Add(new Tuple<int, int, double>(i, list.ElementAt(1).Item2, i + list.ElementAt(1).Item2));
+                    break;
+                }
+
+            //#4
+            for (int j = 0; j < matrix.RowCount; j++)
+                if (matrix[list.ElementAt(2).Item1, j] > 0 && j != list.ElementAt(2).Item2)
+                {
+                    list.Add(new Tuple<int, int, double>(list.ElementAt(2).Item1, j, list.ElementAt(2).Item1 + j));
+                    break;
+                }
+
+            return list;
+        }
+
+        public List<Tuple<int, int,double>> ChoosePath(List<Tuple<int, int, double>> list, DenseMatrix matrix)
+        {
+
+            //#2
+            for (int i = 0; i < matrix.ColumnCount; i++)
+                if (matrix[i, list.ElementAt(0).Item2] > 0 && i != list.ElementAt(0).Item1)
+                {
+                    list.Add(new Tuple<int, int, double>(i, list.ElementAt(0).Item2, i + list.ElementAt(0).Item2));
+                    FirstPath(list, matrix);
+                    break;
+                }
+
+            //#2
+            for (int j = 0; j < matrix.RowCount; j++)
+                if (matrix[list.ElementAt(0).Item1, j] > 0 && j != list.ElementAt(0).Item2)
+                {
+                    list.Add(new Tuple<int, int, double>(list.ElementAt(0).Item1, j, list.ElementAt(0).Item1 + j));
+                    SecondPath(list, matrix);
+                    break;
+                }
+
+            return list;
+
+        }
+
+
+        public double[,] SolveTheCycle(List<Tuple<int, int, double>> list, double[,] baseSolution)
+        {
+            DenseMatrix curentSolution = DenseMatrix.OfArray(baseSolution);
+
+            double ToSubtract = 0;
+
+
+            foreach (Tuple<int, int, double> tuple in list)
+
+            {
+
+                if (list.IndexOf(tuple) == 0)
+                    ToSubtract = curentSolution[tuple.Item1, tuple.Item2];
+                else if (curentSolution[tuple.Item1, tuple.Item2] < ToSubtract)
+                    ToSubtract = curentSolution[tuple.Item1, tuple.Item2];
+            }
+
+            foreach (Tuple<int, int, double> tuple in list)
+            {
+                if ((tuple.Item3 % 2) == 0)
+                    curentSolution[tuple.Item1, tuple.Item2] -= ToSubtract;
+                else
+                    curentSolution[tuple.Item1, tuple.Item2] += ToSubtract;
+            }
+
+
+            return curentSolution.ToArray();
+        }
+        
     }
-}
+ }
