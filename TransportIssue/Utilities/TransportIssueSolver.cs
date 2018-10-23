@@ -183,7 +183,7 @@ namespace TransportIssue.Utilities
 
             ChoosePath(list, matrix);
 
-            list.Sort((x,y) => y.Item3.CompareTo(x.Item3));
+           // list.Sort((x,y) => y.Item3.CompareTo(x.Item3));
 
             //swap
             if(list.ElementAt(1).Item1 > list.ElementAt(2).Item1)
@@ -203,14 +203,14 @@ namespace TransportIssue.Utilities
 
             //#3
             for (int j = 0; j < matrix.RowCount; j++)
-                if (matrix[list.ElementAt(1).Item1, j] > 0 && j != list.ElementAt(1).Item2)
+                if (matrix[list.ElementAt(1).Item1, j] == 0 && j != list.ElementAt(1).Item2)
                 {
                     list.Add(new Tuple<int, int, double>(list.ElementAt(1).Item1, j, list.ElementAt(1).Item1 + j));
                     break;
                 }
             //#4
             for (int i = 0; i < matrix.ColumnCount; i++)
-                if (matrix[i, list.ElementAt(2).Item2] > 0 && i != list.ElementAt(2).Item1)
+                if (matrix[i, list.ElementAt(2).Item2] == 0 && i != list.ElementAt(2).Item1)
                 {
                     list.Add(new Tuple<int, int, double>(i, list.ElementAt(2).Item2, i + list.ElementAt(2).Item2));
                     break;
@@ -226,7 +226,7 @@ namespace TransportIssue.Utilities
 
             //#3
             for (int i = 0; i < matrix.ColumnCount; i++)
-                if (matrix[i, list.ElementAt(1).Item2] > 0 && i != list.ElementAt(1).Item1)
+                if (matrix[i, list.ElementAt(1).Item2] == 0 && i != list.ElementAt(1).Item1)
                 {
                     list.Add(new Tuple<int, int, double>(i, list.ElementAt(1).Item2, i + list.ElementAt(1).Item2));
                     break;
@@ -234,7 +234,7 @@ namespace TransportIssue.Utilities
 
             //#4
             for (int j = 0; j < matrix.RowCount; j++)
-                if (matrix[list.ElementAt(2).Item1, j] > 0 && j != list.ElementAt(2).Item2)
+                if (matrix[list.ElementAt(2).Item1, j] == 0 && j != list.ElementAt(2).Item2)
                 {
                     list.Add(new Tuple<int, int, double>(list.ElementAt(2).Item1, j, list.ElementAt(2).Item1 + j));
                     break;
@@ -246,23 +246,27 @@ namespace TransportIssue.Utilities
         public List<Tuple<int, int,double>> ChoosePath(List<Tuple<int, int, double>> list, DenseMatrix matrix)
         {
 
+            int count = list.Count;
             //#2
             for (int i = 0; i < matrix.ColumnCount; i++)
-                if (matrix[i, list.ElementAt(0).Item2] > 0 && i != list.ElementAt(0).Item1)
+                if (matrix[i, list.ElementAt(0).Item2] == 0 && i != list.ElementAt(0).Item1)
                 {
                     list.Add(new Tuple<int, int, double>(i, list.ElementAt(0).Item2, i + list.ElementAt(0).Item2));
                     FirstPath(list, matrix);
                     break;
                 }
 
-            //#2
-            for (int j = 0; j < matrix.RowCount; j++)
-                if (matrix[list.ElementAt(0).Item1, j] > 0 && j != list.ElementAt(0).Item2)
-                {
-                    list.Add(new Tuple<int, int, double>(list.ElementAt(0).Item1, j, list.ElementAt(0).Item1 + j));
-                    SecondPath(list, matrix);
-                    break;
-                }
+            if (count == list.Count)
+            {
+                //#2
+                for (int j = 0; j < matrix.RowCount; j++)
+                    if (matrix[list.ElementAt(0).Item1, j] == 0 && j != list.ElementAt(0).Item2)
+                    {
+                        list.Add(new Tuple<int, int, double>(list.ElementAt(0).Item1, j, list.ElementAt(0).Item1 + j));
+                        SecondPath(list, matrix);
+                        break;
+                    }
+            }
 
             return list;
 

@@ -82,6 +82,11 @@ namespace UnitTests
             return v1.SequenceEqual(v2);
         }
 
+        private bool CheckEquals(int[] v1, int[] v2)
+        {
+            return v1.SequenceEqual(v2);
+        }
+
         [TestMethod]
         public void Solver_Should_Return_Fixed_OptimalityIndexTable()
         {
@@ -141,35 +146,29 @@ namespace UnitTests
         }
 
         [TestMethod]
-        public void Solver_Should_Return_Fixed_NextBaseSolution()
+
+        [TestMethod]
+        public void Solver_Should_Return_Fixed_Cycle_Points()
         {
-            //Arrange
-            double[,] input = new double[,]
+            //Assert
+            double[,] optimalityIndexTable = new double[3, 3]
             {
-                {20,30,0 },
-                {0,10,60 },
-                {0,0,30 }
+                {0,0,3},
+                {4,0,0},
+                {5,-7,0}
             };
 
-            List<Tuple<int, int>> cycle = new List<Tuple<int, int>>()
+            var validResult = new Tuple<int, int>[]
             {
-                new Tuple<int, int>(2,1),
                 new Tuple<int, int>(1,1),
+                new Tuple<int, int>(1,2),
                 new Tuple<int, int>(1,2),
                 new Tuple<int, int>(2,2)
             };
+            var solverResult = _solver.BuildCycle(optimalityIndexTable);
 
-            double[,] validResult = new double[,]
-            {
-                {20,30,0 },
-                {0,0,70 },
-                {0,10,20 }
-            };
-            //Act
-            var solverResult = _solver.BuildNextBaseSolution(input, cycle);
-
-            //Assert
-            Assert.IsTrue(CheckEquals(validResult, solverResult));
+            Assert.IsTrue(CheckEquals(validResult.Select(i => i.Item1).ToArray(), solverResult.Select(i => i.Item1).ToArray()));
+            Assert.IsTrue(CheckEquals(validResult.Select(i => i.Item2).ToArray(), solverResult.Select(i => i.Item2).ToArray()));
         }
     }
 }
