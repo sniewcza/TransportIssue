@@ -185,7 +185,7 @@ namespace TransportIssue.Utilities
                 list.Add(_start);
                 SecondPath(list, matrix);
             }
-           // list.Sort((x,y) => y.Item3.CompareTo(x.Item3));
+           list.Sort((x,y) => x.Item3.CompareTo(y.Item3));
 
             //swap
             if(list.ElementAt(1).Item1 > list.ElementAt(2).Item1)
@@ -277,9 +277,9 @@ namespace TransportIssue.Utilities
             foreach (Tuple<int, int, double> tuple in list)
             {
                 if ((tuple.Item3 % 2) == 0)
-                    curentSolution[tuple.Item1, tuple.Item2] -= ToSubtract;
-                else
                     curentSolution[tuple.Item1, tuple.Item2] += ToSubtract;
+                else
+                    curentSolution[tuple.Item1, tuple.Item2] -= ToSubtract;
             }
 
 

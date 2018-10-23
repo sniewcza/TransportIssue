@@ -160,7 +160,7 @@ namespace UnitTests
             {
                 new Tuple<int, int>(1,1),
                 new Tuple<int, int>(1,2),
-                new Tuple<int, int>(1,2),
+                new Tuple<int, int>(2,1),
                 new Tuple<int, int>(2,2)
             };
             var solverResult = _solver.BuildCycle(optimalityIndexTable);
