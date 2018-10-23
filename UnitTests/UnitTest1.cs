@@ -143,9 +143,7 @@ namespace UnitTests
 
             //Assert
             Assert.IsTrue(CheckEquals(validResult, solverResult));
-        }
-
-        [TestMethod]
+        }     
 
         [TestMethod]
         public void Solver_Should_Return_Fixed_Cycle_Points()
