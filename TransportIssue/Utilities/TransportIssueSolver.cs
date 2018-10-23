@@ -263,16 +263,10 @@ namespace TransportIssue.Utilities
 
             double ToSubtract = 0;
 
-
-            foreach (Tuple<int, int, double> tuple in list)
-
-            {
-
-                if (list.IndexOf(tuple) == 0)
-                    ToSubtract = curentSolution[tuple.Item1, tuple.Item2];
-                else if (curentSolution[tuple.Item1, tuple.Item2] < ToSubtract)
-                    ToSubtract = curentSolution[tuple.Item1, tuple.Item2];
-            }
+            if (curentSolution[list.ElementAt(1).Item1, list.ElementAt(1).Item2] < curentSolution[list.ElementAt(3).Item1, list.ElementAt(3).Item2])
+                ToSubtract = curentSolution[list.ElementAt(1).Item1, list.ElementAt(1).Item2];
+            else
+                ToSubtract = curentSolution[list.ElementAt(3).Item1, list.ElementAt(3).Item2];
 
             foreach (Tuple<int, int, double> tuple in list)
             {
