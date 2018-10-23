@@ -199,7 +199,8 @@ namespace TransportIssue.Utilities
 
         }
 
-        public List<Tuple<int,int, double>> FirstPath(List<Tuple<int, int, double>> list,DenseMatrix matrix) {
+        public List<Tuple<int, int, double>> FirstPath(List<Tuple<int, int, double>> list, DenseMatrix matrix)
+        {
 
 
             //#2
@@ -207,7 +208,6 @@ namespace TransportIssue.Utilities
                 if (matrix[i, list.ElementAt(0).Item2] == 0 && i != list.ElementAt(0).Item1)
                 {
                     list.Add(new Tuple<int, int, double>(i, list.ElementAt(0).Item2, i + list.ElementAt(0).Item2));
-                    FirstPath(list, matrix);
                     break;
                 }
 
@@ -236,7 +236,6 @@ namespace TransportIssue.Utilities
                 if (matrix[list.ElementAt(0).Item1, j] == 0 && j != list.ElementAt(0).Item2)
                 {
                     list.Add(new Tuple<int, int, double>(list.ElementAt(0).Item1, j, list.ElementAt(0).Item1 + j));
-                    SecondPath(list, matrix);
                     break;
                 }
             //#3
