@@ -67,7 +67,20 @@ namespace TransportIssue.Utilities
             return matrix.ToArray();
         }
 
-        private bool isOptimal(double[,] input)
+        public double getZ(double[,] costs, double[,] solution)
+        {
+            DenseMatrix c = DenseMatrix.OfArray(costs);
+            DenseMatrix s = DenseMatrix.OfArray(solution);
+
+            double summ = 0;
+            for (int i = 0; i < c.RowCount; i++)
+                for (int j = 0; j< c.ColumnCount; j++)
+                {
+                    summ += c[i, j] * s[i, j];
+                }
+            return summ;
+        }
+        public bool isOptimal(double[,] input)
         {
             return DenseMatrix.OfArray(input).Find(val => val < 0) == null ? true : false;
         }
@@ -263,17 +276,17 @@ namespace TransportIssue.Utilities
 
             double ToSubtract = 0;
 
-            if (curentSolution[list.ElementAt(1).Item1, list.ElementAt(1).Item2] < curentSolution[list.ElementAt(3).Item1, list.ElementAt(3).Item2])
-                ToSubtract = curentSolution[list.ElementAt(1).Item1, list.ElementAt(1).Item2];
+            if (curentSolution[list.ElementAt(0).Item1, list.ElementAt(0).Item2] < curentSolution[list.ElementAt(3).Item1, list.ElementAt(3).Item2])
+                ToSubtract = curentSolution[list.ElementAt(0).Item1, list.ElementAt(0).Item2];
             else
                 ToSubtract = curentSolution[list.ElementAt(3).Item1, list.ElementAt(3).Item2];
 
             foreach (Tuple<int, int, double> tuple in list)
             {
                 if ((tuple.Item3 % 2) == 0)
-                    curentSolution[tuple.Item1, tuple.Item2] += ToSubtract;
-                else
                     curentSolution[tuple.Item1, tuple.Item2] -= ToSubtract;
+                else
+                    curentSolution[tuple.Item1, tuple.Item2] += ToSubtract;
             }
 
 

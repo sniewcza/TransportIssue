@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using TransportIssue.Utilities;
 namespace TransportIssue
@@ -64,20 +65,45 @@ namespace TransportIssue
             return recipents;
         }
 
-        private void Solve()
+        private async void Solve()
         {
             _solver = new TransportIssueSolver();
 
-            var baseSolution = _solver.FindaBaseSolution(_costs, _providers, _recipents);
-            var reversedCostsTable = _solver.InverseCostsMatrix(_costs, baseSolution);
-            var dualVariables = _solver.BuildDualVariables(reversedCostsTable);
+            double baseZ=0;
+            double optimalZ=0;
+            await Task.Run(() =>
+            {
+                var baseSolution = _solver.FindaBaseSolution(_costs, _providers, _recipents);
 
-            var alfa = dualVariables.Item1;
-            var beta = dualVariables.Item2;
 
-            var reversedBaseSolution = _solver.InverseBaseSolutionMatrix(baseSolution, _costs);
-            var optimalityTable = _solver.BuildOptimalityIndexTable(reversedBaseSolution, alfa, beta);
+                baseZ = _solver.getZ(_costs, baseSolution);
+               
+                var reversedCostsTable = _solver.InverseCostsMatrix(_costs, baseSolution);
 
+                while (true)
+                {
+                    var dualVariables = _solver.BuildDualVariables(reversedCostsTable);
+
+                    var alfa = dualVariables.Item1;
+                    var beta = dualVariables.Item2;
+
+                    var reversedBaseSolution = _solver.InverseBaseSolutionMatrix(baseSolution, _costs);
+                    var optimalityTable = _solver.BuildOptimalityIndexTable(reversedBaseSolution, alfa, beta);
+
+                    if (_solver.isOptimal(optimalityTable))
+                    {
+                        break;
+                    }
+
+                    var cyclePoints = _solver.BuildCycle(optimalityTable);
+                    baseSolution = _solver.SolveTheCycle(cyclePoints, baseSolution);
+                }
+
+                optimalZ = _solver.getZ(_costs, baseSolution);
+            });
+
+            label1.Text = $"Bazowe Z: {baseZ}";
+            label2.Text = $"Optymalne Z {optimalZ}";
         }
     }
 }

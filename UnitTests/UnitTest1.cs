@@ -143,7 +143,7 @@ namespace UnitTests
 
             //Assert
             Assert.IsTrue(CheckEquals(validResult, solverResult));
-        }     
+        }
 
         [TestMethod]
         public void Solver_Should_Return_Fixed_Cycle_Points()
@@ -168,5 +168,37 @@ namespace UnitTests
             Assert.IsTrue(CheckEquals(validResult.Select(i => i.Item1).ToArray(), solverResult.Select(i => i.Item1).ToArray()));
             Assert.IsTrue(CheckEquals(validResult.Select(i => i.Item2).ToArray(), solverResult.Select(i => i.Item2).ToArray()));
         }
+
+        [TestMethod]
+        public void Solver_Shoult_Return_Fixed_NextBaseSolution()
+        {
+            //Arrange
+            double[,] optimalityIndexTable = new double[3, 3]
+           {
+                {0,0,3},
+                {4,0,0},
+                {5,-7,0}
+           };
+
+            var cyclePoints = _solver.BuildCycle(optimalityIndexTable);
+
+            var baseSolution = new double[,]
+            {
+                {20,30,0 },
+                {0,10,60 },
+                {0,0,30 }
+            };
+            var validNextBaseSolution = new double[,]
+            {
+                {20,30,0 },
+                {0,0,70 },
+                {0,10,20 }
+            };
+
+            var solverResult = _solver.SolveTheCycle(cyclePoints, baseSolution);
+
+            Assert.IsTrue(CheckEquals(validNextBaseSolution, solverResult));
+        }
     }
 }
+
