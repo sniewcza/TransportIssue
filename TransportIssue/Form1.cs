@@ -18,11 +18,19 @@ namespace TransportIssue
 
         private void button1_Click(object sender, System.EventArgs e)
         {
-            _costs = ParseCosts();
-            _recipents = ParseRecipents();
-            _providers = ParseProviders();
+            try
+            {
+                _costs = ParseCosts();
+                _recipents = ParseRecipents();
+                _providers = ParseProviders();
 
-            Solve();
+                Solve();
+            }
+            catch(Exception ex)
+            {
+                
+                MessageBox.Show($"Ups \n {ex.Message}");
+            }
            
         }
 

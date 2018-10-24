@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using MathNet.Numerics.LinearAlgebra.Double;
+using AForge.Math;
 namespace TransportIssue.Utilities
 {
     public class TransportIssueSolver : ITransportIssueSolver
@@ -74,7 +76,7 @@ namespace TransportIssue.Utilities
 
             double summ = 0;
             for (int i = 0; i < c.RowCount; i++)
-                for (int j = 0; j< c.ColumnCount; j++)
+                for (int j = 0; j < c.ColumnCount; j++)
                 {
                     summ += c[i, j] * s[i, j];
                 }
@@ -152,9 +154,9 @@ namespace TransportIssue.Utilities
             return inversed.ToArray();
         }
 
-        public double[,] BuildNextBaseSolution(double[,] baseSolution, List<Tuple<int,int>> cycle)
+        public double[,] BuildNextBaseSolution(double[,] baseSolution, List<Tuple<int, int>> cycle)
         {
-            
+
             DenseMatrix curentSolution = DenseMatrix.OfArray(baseSolution);
 
             var negative1 = cycle[1];
@@ -162,8 +164,8 @@ namespace TransportIssue.Utilities
             var val1 = curentSolution[negative1.Item1, negative1.Item2];
             var val2 = curentSolution[negative2.Item1, negative2.Item2];
             double min = val1 < val2 ? val1 : val2;
-            
-            for(int i =0;i<cycle.Count;i++)
+
+            for (int i = 0; i < cycle.Count; i++)
             {
                 if (i == 0 || i % 2 == 0)
                 {
@@ -181,29 +183,44 @@ namespace TransportIssue.Utilities
         public List<Tuple<int, int, double>> BuildCycle(double[,] input)
         {
             DenseMatrix matrix = DenseMatrix.OfArray(input);
-            List<Tuple<int, int,double>> list = new List<Tuple<int, int,double>>();
-            Tuple<int, int,double> _start = null;
+            List<Tuple<int, int, double>> list = new List<Tuple<int, int, double>>();
+            Tuple<int, int, double> _start = null;
+
+
+
+            double temp1 = 0;
+            int minX = 0;
+            int minY = 0;
             // Start element of cycle
             for (int i = 0; i < matrix.ColumnCount; i++)
                 for (int j = 0; j < matrix.RowCount; j++)
-                    if (matrix[i, j] < 0 )
+                    if (matrix[i, j] < 0)
                     {
-                        _start = new Tuple<int, int, double>(i, j, i + j);
+
+                        if (temp1 > matrix[i, j])
+                        {
+                            temp1 = matrix[i, j];
+                            minX = i;
+                            minY = j;
+                        }
                     }
+            Tuple<int, int> min = new Tuple<int, int>(minX, minY);
+            _start = new Tuple<int, int, double>(min.Item1, min.Item2, min.Item1 + min.Item2);
 
             list.Add(_start);
             FirstPath(list, matrix);
-            if (list.Count < 4) {
+            if (list.Count < 4)
+            {
                 list.Clear();
                 list.Add(_start);
                 SecondPath(list, matrix);
             }
-           list.Sort((x,y) => x.Item3.CompareTo(y.Item3));
+            //list.Sort((x,y) => x.Item3.CompareTo(y.Item3));
 
             //swap
-            if(list.ElementAt(1).Item1 > list.ElementAt(2).Item1)
+            if (list.ElementAt(1).Item1 > list.ElementAt(2).Item1)
             {
-               Tuple<int, int, double> temp = list.ElementAt(1);
+                Tuple<int, int, double> temp = list.ElementAt(1);
                 list[1] = list[2];
                 list[2] = temp;
             }
@@ -242,7 +259,7 @@ namespace TransportIssue.Utilities
             return list;
         }
 
-        public List<Tuple<int, int,double>> SecondPath(List<Tuple<int, int, double>> list, DenseMatrix matrix)
+        public List<Tuple<int, int, double>> SecondPath(List<Tuple<int, int, double>> list, DenseMatrix matrix)
         {
             //#2
             for (int j = 0; j < matrix.RowCount; j++)
@@ -276,22 +293,37 @@ namespace TransportIssue.Utilities
 
             double ToSubtract = 0;
 
-            if (curentSolution[list.ElementAt(0).Item1, list.ElementAt(0).Item2] < curentSolution[list.ElementAt(3).Item1, list.ElementAt(3).Item2])
-                ToSubtract = curentSolution[list.ElementAt(0).Item1, list.ElementAt(0).Item2];
-            else
-                ToSubtract = curentSolution[list.ElementAt(3).Item1, list.ElementAt(3).Item2];
+            var points = list.Select(t => new AForge.IntPoint(t.Item1, t.Item2)).ToArray();
 
-            foreach (Tuple<int, int, double> tuple in list)
+            List<float> distances = new List<float>();
+            for (int i = 1; i < points.Count(); i++)
             {
-                if ((tuple.Item3 % 2) == 0)
-                    curentSolution[tuple.Item1, tuple.Item2] -= ToSubtract;
-                else
-                    curentSolution[tuple.Item1, tuple.Item2] += ToSubtract;
+                distances.Add(points[0].DistanceTo(points[i]));
             }
 
+            var max = distances.Max();
+          
+            var ptmax = points.First(pt => points[0].DistanceTo(pt) == max);
+
+            var pointsToSubstract = points.Where(pt => pt != points[0] && pt != ptmax).ToArray();
+
+            var pointsToAdd = points.Where(pt => pt == points[0] || pt == ptmax).ToArray();
+
+            ToSubtract = curentSolution[pointsToSubstract[0].X,pointsToSubstract[0].Y] < curentSolution[pointsToSubstract[1].X,pointsToSubstract[1].Y] ?
+             curentSolution[pointsToSubstract[0].X, pointsToSubstract[0].Y] : curentSolution[pointsToSubstract[1].X, pointsToSubstract[1].Y];
+            
+            foreach(var pt in pointsToSubstract)
+            {
+                curentSolution[pt.X, pt.Y] -= ToSubtract;
+            }
+
+            foreach(var pt in pointsToAdd)
+            {
+                curentSolution[pt.X, pt.Y] += ToSubtract;
+            }
 
             return curentSolution.ToArray();
         }
-        
     }
- }
+
+}
