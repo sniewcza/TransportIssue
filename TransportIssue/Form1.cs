@@ -79,14 +79,18 @@ namespace TransportIssue
 
             double baseZ=0;
             double optimalZ=0;
+            Form2 form = new Form2();
+            string baseSolutionText = string.Empty;
             await Task.Run(() =>
             {
-                var baseSolution = _solver.FindaBaseSolution(_costs, _providers, _recipents);
+                var b = _solver.FindaBaseSolution(_costs, _providers, _recipents);
 
-
-                baseZ = _solver.getZ(_costs, baseSolution);
                
-                var reversedCostsTable = _solver.InverseCostsMatrix(_costs, baseSolution);
+
+
+                baseZ = _solver.getZ(_costs, b);
+               
+                var reversedCostsTable = _solver.InverseCostsMatrix(_costs, b);
 
                 while (true)
                 {
@@ -95,7 +99,7 @@ namespace TransportIssue
                     var alfa = dualVariables.Item1;
                     var beta = dualVariables.Item2;
 
-                    var reversedBaseSolution = _solver.InverseBaseSolutionMatrix(baseSolution, _costs);
+                    var reversedBaseSolution = _solver.InverseBaseSolutionMatrix(b, _costs);
                     var optimalityTable = _solver.BuildOptimalityIndexTable(reversedBaseSolution, alfa, beta);
 
                     if (_solver.isOptimal(optimalityTable))
@@ -104,14 +108,21 @@ namespace TransportIssue
                     }
 
                     var cyclePoints = _solver.BuildCycle(optimalityTable);
-                    baseSolution = _solver.SolveTheCycle(cyclePoints, baseSolution);
+                    b = _solver.SolveTheCycle(cyclePoints, b);
                 }
 
-                optimalZ = _solver.getZ(_costs, baseSolution);
+                optimalZ = _solver.getZ(_costs, b);
+
+                baseSolutionText = $"{b[0, 0]} {b[0, 1]} {b[0, 2]} \n" +
+               $"{b[1, 0]} {b[1, 1]} {b[1, 2]} \n" +
+               $"{b[2, 0]} {b[2, 1]} {b[2, 2]}";
             });
+            
 
             label1.Text = $"Bazowe Z: {baseZ}";
             label2.Text = $"Optymalne Z {optimalZ}";
+            form.Text = baseSolutionText;
+            form.Show();
         }
     }
 }

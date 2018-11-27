@@ -309,6 +309,8 @@ namespace TransportIssue.Utilities
 
             var pointsToAdd = points.Where(pt => pt == points[0] || pt == ptmax).ToArray();
 
+
+
             ToSubtract = curentSolution[pointsToSubstract[0].X,pointsToSubstract[0].Y] < curentSolution[pointsToSubstract[1].X,pointsToSubstract[1].Y] ?
              curentSolution[pointsToSubstract[0].X, pointsToSubstract[0].Y] : curentSolution[pointsToSubstract[1].X, pointsToSubstract[1].Y];
             
